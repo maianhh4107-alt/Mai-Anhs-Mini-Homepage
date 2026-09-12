@@ -1,6 +1,6 @@
-# [Project name]
+# Mai Anh's Mini Homepage
 
-_Replace the heading above with the project's name, and this line with one sentence describing what this app does for users._
+An interactive personal portfolio for Nguyen Mai Anh, presented as a colorful early-2000s Korean internet homepage.
 
 ## Run & Operate
 
@@ -22,15 +22,20 @@ _Replace the heading above with the project's name, and this line with one sente
 
 ## Where things live
 
-_Populate as you build — short repo map plus pointers to the source-of-truth file for DB schema, API contracts, theme files, etc._
+- `artifacts/mai-anh-homepage/src/App.tsx` — single-page homepage experience and interactions
+- `artifacts/mai-anh-homepage/src/index.css` — retro visual system, room illustration, wallpaper, and responsive rules
+- `attached_assets/Profile_Photo_1789185793051.jpg` — supplied profile photo used by the homepage
+- `attached_assets/CV_1789185775992.pdf` — source of truth for factual portfolio content
 
 ## Architecture decisions
 
-_Populate as you build — non-obvious choices a reader couldn't infer from the code (3-5 bullets)._
+- The site is a frontend-only single-page experience; guestbook entries use localStorage so the interaction works without a backend.
+- Portfolio copy is limited to facts present in the supplied CV; decorative copy is kept separate from biographical claims.
+- The performance archive uses the three exact YouTube URLs from the brief and opens them in a retro video window.
 
 ## Product
 
-_Describe the high-level user-facing capabilities of this app once they exist._
+Visitors enter through a user-initiated intro screen, explore a decorated mini room, browse Mai Anh's profile, work experience, stage archive, skills, achievements, diary, and contact details, and can leave a guestbook message with heart reactions.
 
 ## User preferences
 

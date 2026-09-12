@@ -1,0 +1,28 @@
+kind = "web"
+previewPath = "/"
+title = "Mai Anh's Mini Homepage"
+description = "An interactive personal portfolio for Nguyen Mai Anh, presented as a colorful early-2000s Korean internet homepage with a mini room, profile, work archive, performance stage, diary, and guestbook."
+version = "1.0.0"
+id = "artifacts/mai-anh-homepage"
+router = "path"
+
+[[services]]
+name = "web"
+paths = [ "/" ]
+localPort = 19392
+
+[services.development]
+run = "pnpm --filter @workspace/mai-anh-homepage run dev"
+
+[services.production]
+build = [ "pnpm", "--filter", "@workspace/mai-anh-homepage", "run", "build" ]
+serve = "static"
+publicDir = "artifacts/mai-anh-homepage/dist/public"
+
+[[services.production.rewrites]]
+from = "/*"
+to = "/index.html"
+
+[services.env]
+PORT = "19392"
+BASE_PATH = "/"
