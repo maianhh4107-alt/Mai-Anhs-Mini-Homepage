@@ -1,6 +1,7 @@
-import { useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useRef, useState } from 'react';
 import { ExternalLink, Heart, Music2, Play, Sparkles, X } from 'lucide-react';
 import profilePhoto from '@assets/Profile_Photo_1789185793051.jpg';
+import bgmAudio from '@assets/Supernatural_(Instrumental)_1789186548920.mp3';
 
 type SectionId = 'home' | 'profile' | 'work' | 'stage' | 'achievements' | 'diary' | 'guestbook' | 'contact';
 type Performance = { id: string; title: string; year: string; detail: string; url: string; color: string };
@@ -65,9 +66,10 @@ function WindowBar({ title, onClose }: { title: string; onClose?: () => void }) 
   );
 }
 
-function IntroScreen({ onEnter }: { onEnter: () => void }) {
+function IntroScreen({ onEnter, onStartMusic }: { onEnter: () => void; onStartMusic: () => void }) {
   const [leaving, setLeaving] = useState(false);
   const enter = () => {
+    onStartMusic();
     setLeaving(true);
     window.setTimeout(onEnter, 420);
   };
@@ -353,11 +355,10 @@ function PerformanceModal({ item, onClose }: { item: Performance; onClose: () =>
   return <div className="modal-backdrop" onMouseDown={(e) => { if (e.target === e.currentTarget) onClose(); }}><div className="modal-window"><WindowBar title="MY STAGE / VIDEO PLAYER" onClose={onClose} /><div className="p-4 sm:p-6"><div className="aspect-video border-3 border-[#572b4d] bg-[#211833]"><iframe className="h-full w-full" src={`https://www.youtube-nocookie.com/embed/${id}`} title={item.title} allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowFullScreen /></div><p className="micro mt-5 text-[#df3b70]">{item.year}</p><h2 className="mt-1 text-xl font-black text-[#572b4d]">{item.title}</h2><p className="mt-2 text-sm text-[#70445b]">{item.detail}</p><div className="mt-5 flex flex-wrap gap-3"><a href={item.url} target="_blank" rel="noreferrer" className="glossy-button inline-flex items-center gap-2" data-testid="link-watch-youtube">WATCH ON YOUTUBE <ExternalLink size={14} /></a><button className="nav-chip" onClick={onClose} data-testid="button-close-video">CLOSE WINDOW</button></div></div></div></div>;
 }
 
-function Homepage() {
+function Homepage({ soundOn, onToggleSound }: { soundOn: boolean; onToggleSound: () => void }) {
   const [active, setActive] = useState<SectionId>('home');
   const [workModal, setWorkModal] = useState<string | null>(null);
   const [performance, setPerformance] = useState<Performance | null>(null);
-  const [soundOn, setSoundOn] = useState(true);
   useEffect(() => {
     const observer = new IntersectionObserver((entries) => {
       const visible = entries.filter((entry) => entry.isIntersecting).sort((a, b) => b.intersectionRatio - a.intersectionRatio)[0];
@@ -376,7 +377,7 @@ function Homepage() {
     <main className="world-wallpaper min-h-dvh pb-12 pt-3">
       <div className="retro-shell">
         <div className="browser-top flex flex-wrap items-center gap-2 px-3 py-2"><span className="font-bold">◉ MAI ANH&apos;S MINI HOMEPAGE</span><span className="hidden text-cyan-50/80 sm:inline">— personal internet room</span><span className="ml-auto flex gap-1"><i className="h-3 w-3 bg-[#ffec68]" /><i className="h-3 w-3 bg-[#a9f35b]" /><i className="h-3 w-3 bg-[#ff837e]" /></span></div>
-        <div className="flex flex-wrap items-center gap-2 border-b-2 border-[#572b4d] bg-[#f8c3d3] p-2"><span className="browser-address min-w-[220px] flex-1 px-3 py-1">MINI HOMEPAGE / PERSONAL INTERNET ROOM</span><span className="micro text-[#572b4d]">STATUS: ONLINE</span><button className={`nav-chip ml-auto !px-2 !py-1 ${soundOn ? 'active' : ''}`} onClick={() => setSoundOn((value) => !value)} data-testid="button-toggle-sound"><Music2 size={13} className="inline" /> {soundOn ? 'SOUND ON' : 'SOUND OFF'}</button></div>
+         <div className="flex flex-wrap items-center gap-2 border-b-2 border-[#572b4d] bg-[#f8c3d3] p-2"><span className="browser-address min-w-[220px] flex-1 px-3 py-1">MINI HOMEPAGE / PERSONAL INTERNET ROOM</span><span className="micro text-[#572b4d]">STATUS: ONLINE</span><button className={`nav-chip ml-auto !px-2 !py-1 ${soundOn ? 'active' : ''}`} onClick={onToggleSound} data-testid="button-toggle-sound"><Music2 size={13} className="inline" /> {soundOn ? 'SOUND ON' : 'SOUND OFF'}</button></div>
         <nav className="flex gap-2 overflow-x-auto border-b-3 border-[#572b4d] bg-[#fff0d6] p-2" aria-label="Homepage navigation">{nav.map((item) => <button key={item.id} className={`nav-chip shrink-0 ${active === item.id ? 'active' : ''}`} onClick={() => openSection(item.id)} data-testid={`button-nav-${item.id}`}>{item.label}</button>)}</nav>
         <div className="space-y-7 p-3 sm:p-5"><HeroHome onOpen={openSection} /><ProfileSection /><WorkSection onOpen={setWorkModal} /><StageSection onVideo={setPerformance} /><AchievementsSection /><DiarySection /><GuestbookSection /><ContactSection /></div>
         <footer className="border-t-3 border-[#572b4d] bg-[#7c49a4] px-4 py-5 text-center font-mono text-[10px] text-[#fff8e9]">END OF PAGE / THANK YOU FOR VISITING / <button className="underline" onClick={() => scrollToSection('home')} data-testid="button-back-top">BACK TO TOP</button></footer>
@@ -389,7 +390,42 @@ function Homepage() {
 
 function App() {
   const [entered, setEntered] = useState(false);
-  return entered ? <Homepage /> : <IntroScreen onEnter={() => setEntered(true)} />;
+  const [soundOn, setSoundOn] = useState(true);
+  const audioRef = useRef<HTMLAudioElement | null>(null);
+
+  useEffect(() => {
+    const audio = new Audio(bgmAudio);
+    audio.loop = true;
+    audio.volume = 0.35;
+    audioRef.current = audio;
+    return () => {
+      audio.pause();
+      audio.src = '';
+      audioRef.current = null;
+    };
+  }, []);
+
+  const startMusic = () => {
+    const audio = audioRef.current;
+    if (!audio) return;
+    void audio.play().catch(() => setSoundOn(false));
+  };
+
+  const toggleSound = () => {
+    const nextValue = !soundOn;
+    setSoundOn(nextValue);
+    const audio = audioRef.current;
+    if (!audio) return;
+    if (nextValue) {
+      void audio.play().catch(() => setSoundOn(false));
+    } else {
+      audio.pause();
+    }
+  };
+
+  return entered
+    ? <Homepage soundOn={soundOn} onToggleSound={toggleSound} />
+    : <IntroScreen onStartMusic={startMusic} onEnter={() => setEntered(true)} />;
 }
 
 export default App;
